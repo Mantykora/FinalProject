@@ -13,21 +13,38 @@ import android.widget.Toast;
 
 import com.example.roza.androidlibrary.MainLibAnd;
 import  com.example.roza.lib.Joke;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.util.Pair;
+import android.widget.Toast;
+
+import com.example.roza.androidlibrary.MainLibAnd;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.extensions.android.json.AndroidJsonFactory;
+import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
+import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
+import com.udacity.gradle.builditbigger.backend.myApi.MyApi;
+
+import java.io.IOException;
 
 
 public class MainActivity extends AppCompatActivity {
+
+    private String resultString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        new EndpointsAsyncTask().execute(new Pair<Context, String>(this, "Manfred"));
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+
+
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
@@ -51,15 +68,66 @@ public class MainActivity extends AppCompatActivity {
 
     public void tellJoke(View view) {
 
-        Joke joke = new Joke();
 
-        Log.d("MainActivity", "" + joke.getJoke());
-        Toast.makeText(this, joke.getJoke(), Toast.LENGTH_SHORT).show();
+        new EndpointsAsyncTask().execute(new Pair<Context, String>(this, "Manfred"));
 
-        Intent intent = new Intent(MainActivity.this, MainLibAnd.class);
-        intent.putExtra("joke", joke.getJoke());
-        startActivity(intent);
+        //Joke joke = new Joke();
+
+       // Log.d("MainActivity", "" + joke.getJoke());
+        //Toast.makeText(this, resultString, Toast.LENGTH_LONG).show();
+
+
+    }
+
+    class EndpointsAsyncTask extends AsyncTask<Pair<Context, String>, Void, String> {
+
+        private MyApi myApiService = null;
+        private Context context;
+
+
+        @Override
+        protected String doInBackground(Pair<Context, String>... params) {
+            if (myApiService == null) {  // Only do this once
+                MyApi.Builder builder = new MyApi.Builder(AndroidHttp.newCompatibleTransport(),
+                        new AndroidJsonFactory(), null)
+                        // options for running against local devappserver
+                        // - 10.0.2.2 is localhost's IP address in Android emulator
+                        // - turn off compression when running against local devappserver
+                        .setRootUrl("http://10.0.2.2:8080/_ah/api/")
+                        .setGoogleClientRequestInitializer(new GoogleClientRequestInitializer() {
+                            @Override
+                            public void initialize(AbstractGoogleClientRequest<?> abstractGoogleClientRequest) throws IOException {
+                                abstractGoogleClientRequest.setDisableGZipContent(true);
+                            }
+                        });
+                // end options for devappserver
+
+                myApiService = builder.build();
+            }
+
+            context = params[0].first;
+            //String name = params[0].second;
+
+            try {
+                return myApiService.sayJoke().execute().getData();
+            } catch (IOException e) {
+                return e.getMessage();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+
+            resultString = result;
+
+           // Toast.makeText(context, resultString, Toast.LENGTH_LONG).show();
+            Intent intent = new Intent(MainActivity.this, MainLibAnd.class);
+            intent.putExtra("joke", resultString);
+            startActivity(intent);
+
+        }
     }
 
 
-}
+
+    }
