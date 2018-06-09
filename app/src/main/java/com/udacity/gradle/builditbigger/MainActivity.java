@@ -2,23 +2,13 @@ package com.udacity.gradle.builditbigger;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
-
-import com.example.roza.androidlibrary.MainLibAnd;
-import  com.example.roza.lib.Joke;
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.util.Pair;
-import android.widget.Toast;
 
 import com.example.roza.androidlibrary.MainLibAnd;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -70,13 +60,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         new EndpointsAsyncTask().execute(new Pair<Context, String>(this, "Manfred"));
-
-        //Joke joke = new Joke();
-
-       // Log.d("MainActivity", "" + joke.getJoke());
-        //Toast.makeText(this, resultString, Toast.LENGTH_LONG).show();
-
-
     }
 
     class EndpointsAsyncTask extends AsyncTask<Pair<Context, String>, Void, String> {
@@ -120,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
 
             resultString = result;
 
-           // Toast.makeText(context, resultString, Toast.LENGTH_LONG).show();
             Intent intent = new Intent(MainActivity.this, MainLibAnd.class);
             intent.putExtra("joke", resultString);
             startActivity(intent);
